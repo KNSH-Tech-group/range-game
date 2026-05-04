@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>range 大挑戰</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background: #34495e;
+            padding: 30px 40px;
+            border-radius: 15px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+            width: 100%;
+            max-width: 1100px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #2c3e50;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .header-logo { width: 150px; height: auto; flex-shrink: 0; }
+
+        h2 {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin: 0;
+            color: #f1c40f;
+            font-size: 48px; /* 放大字體 */
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            letter-spacing: 1px;
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        .python-logo { width: 55px; height: auto; }
+
+        .score-board {
+            font-size: 26px;
+            font-weight: bold;
+            background: #f39c12;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            flex-shrink: 0;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .target-box {
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s;
+        }
+        .mode-1-bg { background: #1abc9c; border: 3px dashed #16a085; box-shadow: 0 4px 10px rgba(26, 188, 156, 0.3); }
+        .mode-2-bg { background: #9b59b6; border: 3px dashed #8e44ad; box-shadow: 0 4px 10px rgba(155, 89, 182, 0.3); }
+
+        .target-title { font-size: 22px; font-weight: bold; color: #ecf0f1; margin-bottom: 15px; }
+        .target-content { font-family: 'Consolas', 'Courier New', monospace; font-size: 34px; font-weight: bold; color: white; word-wrap: break-word; }
+
+        .layout-wrapper { display: flex; flex-direction: column; gap: 25px; align-items: center; }
+
+        .code-display {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 25px;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 28px;
+            text-align: center;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .code-keyword { color: #c678dd; }
+        .code-func { color: #61afef; }
+        
+        .editable-args {
+            border-bottom: 3px dashed #d19a66;
+            cursor: text;
+            padding: 0 10px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+            display: inline-block;
+            min-width: 60px;
+            outline: none;
+            color: #d19a66;
+            background-color: rgba(209, 154, 102, 0.1);
+        }
+
+        .btn-submit {
+            width: 100%;
+            max-width: 400px;
+            padding: 18px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 26px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 6px 0px #2980b9;
+            margin: 10px 0;
+            position: relative;
+        }
+        .btn-submit:hover { background-color: #2980b9; top: 2px; box-shadow: 0 4px 0px #1c5980; }
+        .btn-submit:active { top: 6px; box-shadow: none; }
+
+        .feedback-box {
+            background: #c0392b;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e74c3c;
+            display: none;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .feedback-title { font-size: 22px; font-weight: bold; color: white; text-align: center; margin-bottom: 15px; }
+        .compare-row { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 6px; margin-bottom: 10px; }
+        .compare-label { color: #ecf0f1; font-size: 18px; margin-bottom: 5px; }
+        .compare-value { font-family: 'Consolas', 'Courier New', monospace; font-size: 24px; font-weight: bold; }
+        
+        .alert-box {
+            padding: 15px;
+            background-color: #fadbd8;
+            color: #c0392b;
+            border-radius: 8px;
+            font-size: 22px;
+            font-weight: bold;
+            text-align: center;
+            display: none;
+            width: 100%;
+        }
+
+        .success-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(46, 204, 113, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .success-overlay.active { opacity: 1; pointer-events: auto; }
+        .success-title { font-size: 60px; font-weight: bold; color: white; text-shadow: 2px 2px 10px rgba(0,0,0,0.2); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="success-overlay" class="success-overlay">
+            <div class="success-title">🎉 正確！ +10 分</div>
+        </div>
+
+        <div class="header-row">
+            <img src="資訊科技logo.png" alt="Logo" class="header-logo">
+            <h2>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c3/Python-logo-notext.svg" alt="Python" class="python-logo">
+                range 大挑戰
+            </h2>
+            <div class="score-board">Score: <span id="score">0</span></div>
+        </div>
+
+        <div id="target-box" class="target-box mode-1-bg">
+            <div id="target-title" class="target-title">🎯 目標陣列</div>
+            <div id="target-content" class="target-content">[0, 1, 2, 3]</div>
+        </div>
+
+        <div class="layout-wrapper">
+            <div id="input-area" class="code-display"></div>
+            <button id="btn-submit" class="btn-submit">🚀 提交答案</button>
+            <div id="alert-box" class="alert-box"></div>
+            
+            <div id="feedback-box" class="feedback-box">
+                <div class="feedback-title">❌ 答錯囉！請觀察差異：</div>
+                <div class="compare-row">
+                    <div id="feedback-label-target" class="compare-label">🎯 正確的目標：</div>
+                    <div id="feedback-target" class="compare-value" style="color: white;"></div>
+                </div>
+                <div class="compare-row">
+                    <div id="feedback-label-user" class="compare-label">⚠️ 你的產出：</div>
+                    <div id="feedback-user" class="compare-value" style="color: #f1c40f;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const scoreDisplay = document.getElementById('score');
+        const targetBox = document.getElementById('target-box');
+        const targetTitle = document.getElementById('target-title');
+        const targetContent = document.getElementById('target-content');
+        const inputArea = document.getElementById('input-area');
+        const btnSubmit = document.getElementById('btn-submit');
+        const feedbackBox = document.getElementById('feedback-box');
+        const feedbackTarget = document.getElementById('feedback-target');
+        const feedbackUser = document.getElementById('feedback-user');
+        const feedbackLabelTarget = document.getElementById('feedback-label-target');
+        const feedbackLabelUser = document.getElementById('feedback-label-user');
+        const successOverlay = document.getElementById('success-overlay');
+        const alertBox = document.getElementById('alert-box');
+
+        let currentScore = 0;
+        let targetArray = [];
+        let currentTargetCodeStr = ""; 
+        let currentMode = 1; 
+
+        function calculateRange(start, stop, step) {
+            let res = [];
+            if (step === 0) return res; 
+            if (step > 0) {
+                for (let i = start; i < stop; i += step) {
+                    if (res.length >= 50) break;
+                    res.push(i);
+                }
+            } else {
+                for (let i = start; i > stop; i += step) {
+                    if (res.length >= 50) break;
+                    res.push(i);
+                }
+            }
+            return res;
+        }
+
+        function inferRangeFromSequence(arr) {
+            if (!arr || arr.length === 0) return "無法執行 (空迴圈)";
+            if (arr.length === 1) return `range(${arr[0]}, ${arr[0] + 1})`; 
+            let step = arr[1] - arr[0];
+            if (step === 0) return "無效序列";
+            let isValid = true;
+            for (let i = 1; i < arr.length - 1; i++) {
+                if (arr[i+1] - arr[i] !== step) { isValid = false; break; }
+            }
+            if (!isValid) return "非等差數列";
+            let start = arr[0];
+            let tightOffset = step > 0 ? 1 : -1;
+            let stop = arr[arr.length - 1] + tightOffset;
+            if (start === 0 && step === 1 && stop >= 0) return `range(${stop})`;
+            if (step === 1) return `range(${start}, ${stop})`;
+            return `range(${start}, ${stop}, ${step})`;
+        }
+
+        function generateNewChallenge() {
+            feedbackBox.style.display = 'none';
+            alertBox.style.display = 'none';
+            currentMode = Math.random() > 0.5 ? 1 : 2;
+
+            let qStart, qStop, qStep;
+            let tempArray = [];
+
+            do {
+                const randType = Math.random();
+                if (randType < 0.4) {
+                    qStart = getRandomInt(-5, 10);
+                    qStop = qStart + getRandomInt(1, 8);
+                    qStep = 1;
+                } else if (randType < 0.7) {
+                    qStart = getRandomInt(5, 15);
+                    qStop = qStart - getRandomInt(1, 8);
+                    qStep = -1;
+                } else {
+                    qStep = getRandomInt(2, 4) * (Math.random() > 0.5 ? 1 : -1);
+                    if (qStep > 0) {
+                        qStart = getRandomInt(-10, 5);
+                        qStop = qStart + (qStep * getRandomInt(1, 4)) + getRandomInt(0, qStep - 1);
+                    } else {
+                        qStart = getRandomInt(5, 15);
+                        qStop = qStart + (qStep * getRandomInt(1, 4)) + getRandomInt(qStep + 1, 0);
+                    }
+                }
+                tempArray = calculateRange(qStart, qStop, qStep);
+            } while (tempArray.length === 0);
+
+            targetArray = tempArray;
+            let targetArrayStr = '[' + targetArray.join(', ') + ']';
+            let rangeText = (qStart === 0 && qStep === 1 && qStop >= 0) ? `${qStop}` :
+                            (qStep === 1) ? `${qStart}, ${qStop}` : `${qStart}, ${qStop}, ${qStep}`;
+            currentTargetCodeStr = `range(${rangeText})`;
+
+            if (currentMode === 1) {
+                targetBox.className = 'target-box mode-1-bg';
+                targetTitle.textContent = '🎯 請寫出能產生此陣列的範圍 (數字間用逗號隔開)';
+                targetContent.textContent = targetArrayStr;
+                inputArea.innerHTML = `<span class="code-keyword">for</span> i <span class="code-keyword">in</span> <span class="code-func">range</span>(<span class="editable-args" id="user-input" contenteditable="true" spellcheck="false"></span>):`;
+            } else {
+                targetBox.className = 'target-box mode-2-bg';
+                targetTitle.textContent = '🎯 請問這段程式會印出什麼陣列？';
+                targetContent.innerHTML = `<span class="code-keyword" style="font-size:30px;">for</span> i <span class="code-keyword" style="font-size:30px;">in</span> <span class="code-func" style="font-size:30px;">range</span><span style="color:white; font-size:30px;">(${rangeText})</span>:`;
+                inputArea.innerHTML = `<span style="color:#abb2bf;">預測陣列 ➔ </span><span style="color:#3498db;">[</span><span class="editable-args" id="user-input" contenteditable="true" spellcheck="false" style="color:#3498db;"></span><span style="color:#3498db;">]</span>`;
+            }
+
+            setTimeout(() => {
+                const ui = document.getElementById('user-input');
+                if(ui) ui.focus();
+            }, 50);
+        }
+
+        function submitAnswer() {
+            const userInput = document.getElementById('user-input');
+            if(!userInput) return;
+
+            let userArrayString = "";
+            let targetArrayString = "[" + targetArray.join(", ") + "]";
+            let parsedUserNumbers = [];
+            alertBox.style.display = 'none';
+
+            if (currentMode === 1) {
+                // 模式 1：使用者輸入 range 的參數
+                let parts = userInput.innerText.trim().split(',').map(s => parseInt(s.trim()));
+                let sStart = 0, sStop = 0, sStep = 1;
+                
+                if (parts.length === 1 && !isNaN(parts[0])) { sStart = 0; sStop = parts[0]; }
+                else if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) { sStart = parts[0]; sStop = parts[1]; }
+                else if (parts.length >= 3 && !isNaN(parts[0]) && !isNaN(parts[1]) && !isNaN(parts[2])) { sStart = parts[0]; sStop = parts[1]; sStep = parts[2]; }
+                else { alertBox.textContent = "❌ 請輸入正確數字 (例如: 10 或 1, 5)"; alertBox.style.display = 'block'; return; }
+                
+                if (sStep === 0) { alertBox.textContent = "❌ Step 不可為 0"; alertBox.style.display = 'block'; return; }
+                let generated = calculateRange(sStart, sStop, sStep);
+                userArrayString = "[" + generated.join(", ") + "]";
+            } else {
+                // 模式 2：使用者輸入陣列數字
+                let raw = userInput.innerText.replace(/[\[\]]/g, '').trim();
+                // 強化版解析：處理負號與多空格
+                parsedUserNumbers = raw === "" ? [] : raw.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+                userArrayString = "[" + parsedUserNumbers.join(", ") + "]";
+            }
+
+            if (userArrayString === targetArrayString) {
+                currentScore += 10;
+                scoreDisplay.textContent = currentScore;
+                successOverlay.classList.add('active');
+                setTimeout(() => { successOverlay.classList.remove('active'); generateNewChallenge(); }, 1000);
+            } else {
+                // 更新回饋框標籤與內容
+                if (currentMode === 1) {
+                    feedbackLabelTarget.textContent = '🎯 正確的目標陣列：';
+                    feedbackTarget.textContent = targetArrayString;
+                    feedbackLabelUser.textContent = '⚠️ 你程式碼產出的陣列：';
+                    feedbackUser.textContent = userArrayString;
+                } else {
+                    feedbackLabelTarget.textContent = '🎯 題目原本的程式碼：';
+                    feedbackTarget.textContent = currentTargetCodeStr;
+                    feedbackLabelUser.textContent = '⚠️ 你填寫的陣列對應程式碼：';
+                    feedbackUser.textContent = inferRangeFromSequence(parsedUserNumbers);
+                }
+                feedbackBox.style.display = 'block';
+            }
+        }
+
+        function getRandomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+        window.onload = generateNewChallenge;
+        btnSubmit.addEventListener('click', submitAnswer);
+    </script>
+</body>
+</html>
